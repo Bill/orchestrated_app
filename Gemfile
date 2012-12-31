@@ -22,10 +22,11 @@ end
 gem 'jquery-rails'
 
 gem 'delayed_job_active_record'
-gem 'ick'
+gem 'state_machine'
 
 group :test, :spec, :development do
   gem 'rspec-rails'
   gem 'factory_girl'
   gem 'debugger' # this is what you say on ruby 1.9.3 (don't use ruby-debug)
+  gem 'ruby-graphviz', :require => 'graphviz' # state machine visualization
 end

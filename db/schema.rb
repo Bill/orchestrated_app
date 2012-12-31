@@ -11,7 +11,17 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121224184425) do
+ActiveRecord::Schema.define(:version => 20121229170241) do
+
+  create_table "completion_expressions", :force => true do |t|
+    t.string  "type"
+    t.integer "orchestration_id"
+  end
+
+  create_table "composited_completions", :force => true do |t|
+    t.integer "composite_completion_id"
+    t.integer "completion_expression_id"
+  end
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0
@@ -29,10 +39,10 @@ ActiveRecord::Schema.define(:version => 20121224184425) do
 
   add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
 
-  create_table "firsts", :force => true do |t|
-  end
-
-  create_table "seconds", :force => true do |t|
+  create_table "orchestrations", :force => true do |t|
+    t.string  "state"
+    t.text    "handler"
+    t.integer "prerequisite_id"
   end
 
 end

@@ -1,5 +1,9 @@
 require 'spec_helper'
 
+require 'orchestrated'
+require 'first'
+require 'second'
+
 describe Orchestrated do
   context 'initializing' do
     it 'should not define orchestrated on Object' do
@@ -8,12 +12,12 @@ describe Orchestrated do
     it 'should not define orchestrated on ActiveRecord::Base' do
       expect(ActiveRecord::Base.public_method_defined?(:orchestrated)).to be_false
     end
-    it 'should define orchestrated on First class' do
+    it 'should define orchestrated on First' do
       expect(First.public_method_defined?(:orchestrated)).to be_true
     end
   end
   context 'a new orchestrated object' do
-    let(:f){First.create}
+    let(:f){First.new}
     context 'responding to messages without orchestration' do
       let(:result){f.do_first_thing(2)} # 2 is a prime number
       it 'should immediately invoke a non-orchestrated method and return correct result' do
@@ -24,58 +28,52 @@ describe Orchestrated do
       before(:each){@result = f.orchestrated.do_first_thing(2)}
       after(:each){DJ.clear_all_jobs}
       it 'should not immediately invoke an orchestrated method' do
-        expect(@result).to_not eq(5 * 2)
+        First.any_instance.should_not_receive(:do_first_thing)
       end
-      it 'should return a Completion object' do
-        expect(@result).to be_kind_of(Orchestrated::Completion)
+      it 'should return an Orchestration object' do
+        expect(@result).to be_kind_of(Orchestrated::CompletionExpression)
       end
       it 'should enqueue a job' do
         expect(DJ.job_count).to eq(1)
       end
       context 'after work_off' do
-        it 'should instantiate the orchestrated object' do
-          expect_deswizzle(First) do |f2|
-            expect(f2.id).to be_equal(f.id)
-          end
-          DJ.work
-        end
         it 'should invoke the orchestrated method' do
-          expect_deswizzle(First) do |f2|
-            f2.should_receive(:do_first_thing).exactly(1).times
-          end
+          First.any_instance.should_receive(:do_first_thing)
           DJ.work
         end
         it 'should pass a parameter to the orchestrated object' do
-          expect_deswizzle(First) do |f2|
-            f2.should_receive(:do_first_thing).with(2)
-          end
+          First.any_instance.should_receive(:do_first_thing).with(2)
           DJ.work
         end
       end
     end
     context 'orchestrating with a simple prerequisite' do
-      let(:s) {Second.create}
-      before(:each){@result = s.orchestrated( f.orchestrated.do_first_thing(2)).do_second_thing(3)} # 3 is a prime number
+      let(:s) {Second.new}
+      before(:each){
+        a = f
+        b = a.orchestrated
+        c = b.do_first_thing(2)
+        d = s
+        e = d.orchestrated(c)
+        g = e.do_second_thing(3)
+        @result = g
+      # @result = s.orchestrated( f.orchestrated.do_first_thing(2)).do_second_thing(3)
+      } # 3 is a prime number
       context 'after completing the prerequisite' do
         before(:each) do
           DJ.work # this completes the first prerequisite (see "orchestrating with no precursors after work_off")
         end
         context 'next work_off' do
-          it 'should instantiate the orchestrated object' do
-            expect_deswizzle(Second) do |s2|
-              expect(s2.id).to be_equal(s.id)
-            end
+          it 'should invoke the orchestrated method' do
+            Second.any_instance.should_receive(:do_second_thing).exactly(1).times
             DJ.work
           end
-          # TODO: OR maybe verify that the message has already been delivered
+          it 'should pass a parameter to the orchestrated object' do
+            Second.any_instance.should_receive(:do_second_thing).with(3)
+            DJ.work
+          end
         end
       end
     end
-    # context 'with a precursor' do
-    #   let(:s){Second.create}
-    #     it 'should delay invocation of an orchestrated method' do
-    #       expect(s.orchestrated(f.completion).do_second_thing).to be_nil
-    #     end
-    # end
   end
 end

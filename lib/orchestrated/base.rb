@@ -1,27 +1,41 @@
 module Orchestrated
 
-  class OrchestratingWrapper < Ick::Wrapper
-    def initialize(value, prerequisite)
+  class Proxy
+    def initialize(prerequisite, target)
       @prerequisite = prerequisite
-      super(value)
+      @target       = target
     end
-    def __rewrap__(new_value)
-      self.__class.new(new_value, @prerequisite) #contagious
-    end
-    def __invoke__(sym, *args, &block)
-      # TODO: set up database stuff to record guard conditions
-      # TODO: move this delay.send to run after prerequisite is met
-      @value.delay.send( sym, *args, &block) # queue work
-      # TBD: should I evaluate all db guard conditions here poll for it elsewhere?
-      @prerequisite
+    def method_missing(sym, *args)
+      raise 'cannot orchestrate with blocks because they are not portable across processes' if block_given?
+      OrchestrationCompletion.new do |completion|
+        completion.orchestration = Orchestration.create( @target, sym, args, @prerequisite)
+      end.tap do |completion|
+        completion.save!
+      end
     end
   end
 
-  class Orchestrated < Ick::Wrap
-    def invoke(value, prerequisite=Complete.new, &proc)
-      invoke_wrapped(value, OrchestratingWrapper, prerequisite, &proc)
+  class << self
+    #snarfed from Ruby On Rails
+    def underscore(camel_cased_word)
+      camel_cased_word.to_s.gsub(/::/, '/').
+        gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
+        tr("-", "_").
+        downcase
     end
-    evaluates_in_calling_environment and returns_result
+    def belongs_to clazz
+      # borrowed from Ick
+      method_name = self.underscore(self.name.split('::')[-1])
+      unless clazz.method_defined?(method_name)
+        clazz.class_eval "
+          def #{method_name}(prerequisite=Complete.new)
+            raise 'orchestrate does not take a block' if block_given?
+            raise %[cannot use \#{prerequisite.class.name} as a prerequisite] unless
+              prerequisite.kind_of?(CompletionExpression)
+            Proxy.new(prerequisite, self)
+          end"
+      end
+    end
   end
 
 end

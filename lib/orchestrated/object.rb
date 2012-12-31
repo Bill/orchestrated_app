@@ -3,7 +3,7 @@ module Orchestrated
   module ActiveRecordExtensions
   end
 
-  class ActiveRecord::Base
+  class ::Object
     class << self
       def acts_as_orchestrated
         include ActiveRecordExtensions

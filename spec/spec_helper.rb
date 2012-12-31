@@ -10,7 +10,6 @@ Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
 
 require 'delayed_job_facade'
 require 'spec_helper_methods'
-require 'hook_find'
 
 RSpec.configure do |config|
   # ## Mock Framework
