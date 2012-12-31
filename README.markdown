@@ -5,24 +5,24 @@ Orchestrated will soon be a Ruby Gem. For now we are using this little Rails app
 
 To orchestrate (methods) on your own classes you simply call "acts_as_orchestrated" in the class definition like this:
 
-  class StatementGenerator
+    class StatementGenerator
 
-    acts_as_orchestrated
+      acts_as_orchestrated
 
-    def generate(statement_id)
-    ...
+      def generate(statement_id)
+      ...
+      end
+
+      def render(statement_id)
+      ...
+      end
+
     end
-
-    def render(statement_id)
-    ...
-    end
-
-  end
 
 After that you can orchestrate any method on such a class e.g.
 
-  gen = StatementGenerator.new
-  gen.orchestrate( orchestrate.generate(stmt_id) ).render(stmt_id)
+    gen = StatementGenerator.new
+    gen.orchestrate( orchestrate.generate(stmt_id) ).render(stmt_id)
 
 The next time you process a delayed job, the :generate message will be delivered. The time after that, the :render message will be delivered.
 
@@ -71,6 +71,6 @@ After your workflow step executes, the orchestration moves into either the "succ
 Next Steps
 ==========
 
-TODO: currently it always moves to "succeeded", error handling will be added to move to "failed" on exception.
-TODO: "cancelled" state is for future use: the idea is we want to add the ability to cancel orchestrations and have that cascade sensibly
-TODO: package this thing into a Ruby Gem
+1. currently it always moves to "succeeded", error handling will be added to move to "failed" on exception.
+2. "cancelled" state is for future use: the idea is we want to add the ability to cancel orchestrations and have that cascade sensibly
+3. package this thing into a Ruby Gem
