@@ -58,7 +58,7 @@ Orchestration State
 
 An orchestration can be in one of six (6) states:
 
-![Alt text](/paydici/orchestrated_app/Orchestrated::Orchestration_state.png 'Orchestration States')
+![Alt text](/paydici/orchestrated_app/blob/master/Orchestrated::Orchestration_state.png 'Orchestration States')
 
 You'll never see an orchestration in the "new" state, it's for internal use in the framework. But all the others are interesting.
 
