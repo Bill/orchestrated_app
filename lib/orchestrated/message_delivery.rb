@@ -3,6 +3,8 @@ module Orchestrated
     attr_accessor :orchestrated, :method_name, :args, :orchestration_id
 
     def initialize(orchestrated, method_name, args, orchestration_id)
+      raise 'all arguments to MessageDelivery constructor are required' unless
+        orchestrated and method_name and args and orchestration_id
       self.orchestrated = orchestrated
       self.method_name  = method_name
       self.args         = args
@@ -10,9 +12,12 @@ module Orchestrated
     end
 
     def perform
-      orchestrated.send(method_name, *args) if orchestrated
-
       orchestration = Orchestration.find(self.orchestration_id)
+
+      orchestrated.orchestration = orchestration
+      orchestrated.send(method_name, *args)
+      orchestrated.orchestration = nil
+
       orchestration.message_delivery_succeeded
     end
 

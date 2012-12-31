@@ -2,7 +2,6 @@ require 'spec_helper'
 
 require 'orchestrated'
 require 'first'
-require 'second'
 
 describe Orchestrated do
   context 'initializing' do
@@ -33,6 +32,16 @@ describe Orchestrated do
       it 'should return an Orchestration object' do
         expect(@result).to be_kind_of(Orchestrated::CompletionExpression)
       end
+    end
+  end
+  context 'invocation' do
+    before(:each) do
+      First.new.orchestrated.do_first_thing(1)
+    end
+    it 'should have access to Orchestration' do
+      First.any_instance.should_receive(:orchestration=).with(kind_of(Orchestrated::Orchestration))
+      First.any_instance.should_receive(:orchestration=).with(nil)
+      DJ.work(1)
     end
   end
 end
