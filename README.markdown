@@ -1,7 +1,29 @@
 Orchestrated Test Project
 =========================
 
-Orchestrated will soon be a Ruby Gem. For now we are using this little Rails application to develop and test the framework. If you run "rails s" and load the main page (/) you'll be creating a simple workflow. If you want to execute that thing you can either run "rake jobs:work" from the command line (to continually run steps) or go into "rails c" and run DJ.work(num=100) (to run a specified number of steps). You might also be interested in the specs. "rake spec" will run them all as expected.
+Orchestrated will soon be a Ruby Gem. For now we are using this little Rails application to develop and test the framework.
+
+Installation
+------------
+
+1. clone the repository: in your local terminal type
+    git clone https://github.com/paydici/orchestrated_app.git
+2. set up the sqlite3 database:
+    rake db:migrate
+3. run the specs (tests):
+    rake spec
+
+If you did that right, you should see a bunch of green dots!
+
+Playing
+-------
+
+If you run "rails s" and load the main page (/) you'll be creating a simple workflow. If you want to execute that thing you can either run "rake jobs:work" from the command line (to continually run steps) or go into "rails c" and run DJ.work(num=100) (to run a specified number of steps).
+
+A great way to learn about the framework is to have a look at the specs (in the /spec directory).
+
+API
+---
 
 To orchestrate (methods) on your own classes you simply call "acts_as_orchestrated" in the class definition like this:
 
@@ -36,8 +58,8 @@ Now the messages you can send in (3) are limited to the messages that your objec
 
 Not accidentally, this is similar to the way delayed_job's delay method works. Under the covers, orchestrated is consipring with delayed_job when it comes time to actually execute a workflow step. Before that time though, orchestrated keeps track of everything.
 
-Prerequisites (Completion Expressions)
-=========================================
+Key Concept: Prerequisites (Completion Expressions)
+---------------------------------------------------
 
 Unlike delayed_job "delay", the orchestrated "orchestrated" method takes an optional parameter: the prerequisite. The prerequisite determines when your workflow step is ready to run.
 
@@ -53,8 +75,8 @@ There are five kinds of prerequisite in all. Some of them are used for combining
 
 See the completion_spec for examples of how to combine these different prerequisite types into completion expressions.
 
-Orchestration State
-===================
+Key Concept: Orchestration State
+--------------------------------
 
 An orchestration can be in one of six (6) states:
 
@@ -68,9 +90,10 @@ A "ready" orchestration will use delayed_job to delivery its (delayed) message. 
 
 After your workflow step executes, the orchestration moves into either the "succeeded" or "failed" state.
 
-Next Steps
-==========
+Project Next Steps
+------------------
 
-1. currently it always moves to "succeeded", error handling will be added to move to "failed" on exception.
-2. "cancelled" state is for future use: the idea is we want to add the ability to cancel orchestrations and have that cascade sensibly
-3. package this thing into a Ruby Gem
+1. currently orchestrated steps always move to "succeeded", error handling will be added to move to "failed" when exceptions are thrown
+2. think through how we want to handle (database) transactions vis-a-vis delayed_job and the other orchestration structures
+3. "cancelled" state is for future use: the idea is we want to add the ability to cancel orchestrations and have that cascade sensibly
+4. package this thing into a Ruby Gem
