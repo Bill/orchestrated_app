@@ -49,28 +49,16 @@ describe Orchestrated do
     end
     context 'orchestrating with a simple prerequisite' do
       let(:s) {Second.new}
-      before(:each){
-        a = f
-        b = a.orchestrated
-        c = b.do_first_thing(2)
-        d = s
-        e = d.orchestrated(c)
-        g = e.do_second_thing(3)
-        @result = g
-      # @result = s.orchestrated( f.orchestrated.do_first_thing(2)).do_second_thing(3)
-      } # 3 is a prime number
+      before(:each){@result = s.orchestrated( f.orchestrated.do_first_thing(2)).do_second_thing(3)} # 3 is a prime number
       context 'after completing the prerequisite' do
-        before(:each) do
-          DJ.work # this completes the first prerequisite (see "orchestrating with no precursors after work_off")
-        end
         context 'next work_off' do
           it 'should invoke the orchestrated method' do
             Second.any_instance.should_receive(:do_second_thing).exactly(1).times
-            DJ.work
+            DJ.work(2)
           end
           it 'should pass a parameter to the orchestrated object' do
             Second.any_instance.should_receive(:do_second_thing).with(3)
-            DJ.work
+            DJ.work(2)
           end
         end
       end

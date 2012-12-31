@@ -5,8 +5,8 @@ module DJ
   def job_count
     Delayed::Job.count
   end
-  def work
-    Delayed::Worker.new.work_off
+  def work(num=1)
+    Delayed::Worker.new.work_off(num)
   end
   def clear_all_jobs
     Delayed::Job.delete_all
