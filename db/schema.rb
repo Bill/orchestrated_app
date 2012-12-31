@@ -40,9 +40,11 @@ ActiveRecord::Schema.define(:version => 20121229170241) do
   add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
 
   create_table "orchestrations", :force => true do |t|
-    t.string  "state"
-    t.text    "handler"
-    t.integer "prerequisite_id"
+    t.string   "state"
+    t.text     "handler"
+    t.integer  "prerequisite_id"
+    t.datetime "created_at",      :null => false
+    t.datetime "updated_at",      :null => false
   end
 
 end

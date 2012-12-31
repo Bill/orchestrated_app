@@ -24,7 +24,7 @@ describe Orchestrated do
         expect(result).to eq(5 * 2)
       end
     end
-    context 'orchestrating with no precursors' do
+    context 'orchestrating with no prerequisites' do
       before(:each){@result = f.orchestrated.do_first_thing(2)}
       after(:each){DJ.clear_all_jobs}
       it 'should not immediately invoke an orchestrated method' do

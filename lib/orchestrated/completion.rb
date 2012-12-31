@@ -16,15 +16,18 @@ module Orchestrated
   class CompositeCompletion < CompletionExpression
     # self.abstract_class = true
     has_many :composited_completions
-    has_many :constituents, :through => :composited_completions
-    def <<(c); constituents << c; end
+    has_many :completion_expressions, :through => :composited_completions, :source => :composite_completion
+    def <<(c)
+      composited_completions.build{|cc| cc.completion_expression = c}
+      self
+    end
     def +(c); self << c; end # synonym
   end
   class LastCompletion < CompositeCompletion
-    def complete?; constituents.all(&:complete?); end
+    def complete?; completion_expressions.all.all?(&:complete?); end
   end
   class FirstCompletion < CompositeCompletion
-    def complete?; constituents.any(&:complete?); end
+    def complete?; completion_expressions.all.any?(&:complete?); end
   end
   class OrchestrationCompletion < CompletionExpression
     # Arguably, it is "bad" to make this class derive

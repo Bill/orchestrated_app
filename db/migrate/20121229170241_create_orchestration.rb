@@ -4,6 +4,7 @@ class CreateOrchestration < ActiveRecord::Migration
       table.string     :state
       table.text       :handler
       table.references :prerequisite
+      table.timestamps
     end
     create_table :completion_expressions do |table|
       table.string     :type
