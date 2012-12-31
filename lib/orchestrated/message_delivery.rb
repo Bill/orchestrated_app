@@ -1,16 +1,17 @@
 module Orchestrated
-  # just like a PerformableMethod but we want to intercept delivery
-  # of the delayed message and do so set-up and tear-down
-  class MessageDelivery < Delayed::PerformableMethod
-    attr_accessor :orchestration_id
+  class MessageDelivery
+    attr_accessor :orchestrated, :method_name, :args, :orchestration_id
 
     def initialize(orchestrated, method_name, args, orchestration_id)
-      super(orchestrated, method_name, args)
+      self.orchestrated = orchestrated
+      self.method_name  = method_name
+      self.args         = args
       self.orchestration_id = orchestration_id
     end
 
     def perform
-      super
+      orchestrated.send(method_name, *args) if orchestrated
+
       orchestration = Orchestration.find(self.orchestration_id)
       orchestration.message_delivery_succeeded
     end
