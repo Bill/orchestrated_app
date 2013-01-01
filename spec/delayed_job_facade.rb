@@ -8,7 +8,17 @@ module DJ
   def work(num=100)
     Delayed::Worker.new.work_off(num)
   end
+  def work_now(num=100)
+    (1..num).each do
+      DelayedJob.first.tap{|job| job.run_at = 1.second.ago; job.save!}
+      DJ.work(1)
+    end
+  end
   def clear_all_jobs
     Delayed::Job.delete_all
+  end
+  def max_attempts
+    # configured in initializers/delayed_job_config.rb
+    Delayed::Worker.max_attempts
   end
 end

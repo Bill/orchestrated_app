@@ -21,5 +21,11 @@ module Orchestrated
       orchestration.message_delivery_succeeded
     end
 
+    # delayed_job hands us this message after max_attempts are exhausted
+    def failure
+      orchestration = Orchestration.find(self.orchestration_id)
+      orchestration.message_delivery_failed
+    end
+
   end
 end

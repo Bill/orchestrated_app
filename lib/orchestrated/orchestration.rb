@@ -39,6 +39,10 @@ module Orchestrated
         transition :ready => :succeeded
       end
 
+      event :message_delivery_failed do
+        transition :ready => :failed
+      end
+
       after_transition any => :ready do |orchestration, transition|
         orchestration.enqueue
       end
