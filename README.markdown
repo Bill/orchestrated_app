@@ -54,11 +54,16 @@ class StatementGenerator
 end
 ```
 
+Declaring ```acts_as_orchestrated``` on your class gives it two methods:
+
+* ```orchestrated```—call this to specify your workflow prerequisite, and designate a workflow step
+* ```orchestration```—call this in the context of a workflow step (execution) to access orchestration (and prerequisite) context
+
 After that you can orchestrate any method on such a class e.g.
 
 ```ruby
 gen = StatementGenerator.new
-gen.orchestrate( orchestrate.generate(stmt_id) ).render(stmt_id)
+gen.orchestrated( orchestrated.generate(stmt_id) ).render(stmt_id)
 ```
 
 The next time you process a delayed job, the :generate message will be delivered. The time after that, the :render message will be delivered.
@@ -66,7 +71,7 @@ The next time you process a delayed job, the :generate message will be delivered
 What happened there? The pattern is:
 
 1. create an orchestrated object (instantiate it)
-2. call orchestrate on it: this returns an "orchestration"
+2. call orchestrated on it: this returns an "orchestration"
 3. send a message to the orchestration (returned in the second step)
 
 Now the messages you can send in (3) are limited to the messages that your object can respond to. The message will be "remembered" by the framework and "replayed" (on a new instance of your object) somewhere on the network (later).
@@ -78,7 +83,7 @@ Key Concept: Prerequisites (Completion Expressions)
 
 Unlike delayed_job ```delay```, the orchestrated ```orchestrated``` method takes an optional parameter: the prerequisite. The prerequisite determines when your workflow step is ready to run.
 
-The return value from "orchestrate" is itself a ready-to-use prerequisite. You saw this in the statement generation example above. The result of the first orchestrate call was sent as an argument to the second. In this way, the second workflow step was suspended until after the first one finished. You may have also noticed from that example that if you specify no prerequisite then the step will be ready to run immediately, as was the case for the "generate" call).
+The return value from "orchestrate" is itself a ready-to-use prerequisite. You saw this in the statement generation example above. The result of the first ```orchestrated``` call was sent as an argument to the second. In this way, the second workflow step was suspended until after the first one finished. You may have also noticed from that example that if you specify no prerequisite then the step will be ready to run immediately, as was the case for the "generate" call).
 
 There are five kinds of prerequisite in all. Some of them are used for combining others. The prerequisites types, also known as "completion expressions" are:
 
@@ -105,10 +110,26 @@ A "ready" orchestration will use delayed_job to delivery its (delayed) message. 
 
 After your workflow step executes, the orchestration moves into either the "succeeded" or "failed" state.
 
+At any time, an orchestration may be cancelled. This moves it to the "cancelled" state and prevents delivery of the orchestrated message (in the future).
+
+It is important to understand that all three of the states: "succeeded", "failed", "cancelled" are part of a "super-state": "complete". When an orchestration is in any of those three states, it will return ```true``` in response to the ```complete?``` message. That also means that any other orchestration that is waiting, will be potentially be made "ready" to run.
+
+As a result, it is not just successful completion of orchestrated methods that causes dependent ones to run—a "failed" orchestration is complete too! If you have an orchestration that actually requires successful completion of its prerequisite then it can inspect the prerequisite as needed. It's accessible through the ```orchestration`` accessor (on the orchestrated object).
+
+Failure (An Option)
+-------------------
+
+Orchestration is built atop delayed_job and borrows delayed_job's failure semantics. Neither framework imposes any special constraints on the (delayed or orchestrated) methods. In particular, there are no special return values to signal "failure". Orchestration adopts delayed_job's semantics for failure detection: a method that raises an exception has failed. After a certain number of retries (configurable in delayed_job) the jobs is deemed permanently failed. When that happens, the corresponding orchestration is marked "failed".
+
+Cancelling an Orchestration
+---------------------------
+
+An orchestration can be cancelled by sending the (orchestration completion) the ```cancel``` message. This will prevent the orchestrated method from running (in the future). It will also mark the orchestration as "complete" which may cause dependent orchestrations to run.
+
+
 Project Next Steps
 ------------------
 
-1. currently orchestrated steps always move to "succeeded", error handling will be added to move to "failed" when exceptions are thrown
+1. decide whether cancellation should cancel downstream orchestrations
 2. think through how we want to handle (database) transactions vis-a-vis delayed_job and the other orchestration structures
-3. "cancelled" state is for future use: the idea is we want to add the ability to cancel orchestrations and have that cascade sensibly
-4. package this thing into a Ruby Gem
+3. package this thing into a Ruby Gem
