@@ -1,10 +1,21 @@
 Orchestrated Test Project
 =========================
 
-Orchestrated will soon be a Ruby Gem. For now we are using this little Rails application to develop and test the framework.
+The delayed_job Ruby Gem provides a job queueing system for Ruby. It implements an elegant API for delaying execution of any object method. Not only is the execution of the method (message delivery) delayed in time, it is potentially shifted in space. By shifting in space, i.e. running in a separate virtual machine, possibly on a separate computer, multiple CPUs can be brought to bear on a computing problem.
 
-Installation
-------------
+By breaking up otherwise serial execution into multiple queued jobs, a program can be made more scalable. Processing of (distributed) queues has a long and successful history in data processing for this reason.
+
+Queuing well for simple tasks. By simple I mean, the task can be done all at once, in one piece. It has no dependencies on other tasks. This works well for performing a file upload task in the background (to avoid tying up a Ruby virtual machine process/thread). More complex (compound) multi-part tasks, however, do not fit this model. Examples of complex (compound) tasks include:
+
+1. pipelined (multi-step) generation of complex PDF documents
+2. extract/transfer/load (ETL) jobs that may load thousands of database records
+
+If we would like to scale these compound operations, breaking them into smaller parts, and managing the execution of those parts across many computers, we need an "orchestrator". This project implements just such a framework, called "Orchestrated".
+
+Orchestrated will soon be packaged as an Open Source Ruby Gem. For now we are using this little Rails application to develop and test the framework.
+
+Installing The Toy Application
+------------------------------
 
 1. clone the repository: in your local terminal type
     git clone https://github.com/paydici/orchestrated_app.git
@@ -15,15 +26,15 @@ Installation
 
 If you did that right, you should see a bunch of green dots!
 
-Playing
--------
+Playing With The Framework
+--------------------------
 
 If you run "rails s" and load the main page (/) you'll be creating a simple workflow. If you want to execute that thing you can either run "rake jobs:work" from the command line (to continually run steps) or go into "rails c" and run DJ.work(num=100) (to run a specified number of steps).
 
 A great way to learn about the framework is to have a look at the specs (in the /spec directory).
 
-API
----
+The API
+-------
 
 To orchestrate (methods) on your own classes you simply call "acts_as_orchestrated" in the class definition like this:
 
