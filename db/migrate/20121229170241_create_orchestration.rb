@@ -4,6 +4,7 @@ class CreateOrchestration < ActiveRecord::Migration
       table.string     :state
       table.text       :handler
       table.references :prerequisite
+      table.references :delayed_job, :polymorphic => true
       table.timestamps
     end
     create_table :completion_expressions do |table|

@@ -43,8 +43,10 @@ ActiveRecord::Schema.define(:version => 20121229170241) do
     t.string   "state"
     t.text     "handler"
     t.integer  "prerequisite_id"
-    t.datetime "created_at",      :null => false
-    t.datetime "updated_at",      :null => false
+    t.integer  "delayed_job_id"
+    t.string   "delayed_job_type"
+    t.datetime "created_at",       :null => false
+    t.datetime "updated_at",       :null => false
   end
 
 end

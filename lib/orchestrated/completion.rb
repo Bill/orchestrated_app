@@ -38,7 +38,7 @@ module Orchestrated
     # understand joins when computing dependents at runtime.
     belongs_to :orchestration
     validates_presence_of :orchestration_id
-    delegate :complete?, :to => :orchestration
+    delegate :complete?, :cancel, :to => :orchestration
   end
   class CompositedCompletion < ActiveRecord::Base
     belongs_to :composite_completion

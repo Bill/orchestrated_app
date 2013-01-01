@@ -6,6 +6,7 @@ module Orchestrated
     serialize :handler
 
     belongs_to :prerequisite, :class_name => 'CompletionExpression'
+    belongs_to :delayed_job, :polymorphic => true # loose-ish coupling with delayed_job
 
     has_many :orchestration_completions
 
@@ -43,6 +44,10 @@ module Orchestrated
         transition :ready => :failed
       end
 
+      event :cancel do
+        transition (any - :cancelled) => :cancelled
+      end
+
       after_transition any => :ready do |orchestration, transition|
         orchestration.enqueue
       end
@@ -54,6 +59,11 @@ module Orchestrated
           other.prerequisite_changed
         end
       end
+
+      after_transition :ready => :cancelled do |orchestration, transition|
+        orchestration.dequeue
+      end
+
     end
 
     def self.create( value, sym, args, prerequisite)
@@ -69,7 +79,11 @@ module Orchestrated
     end
 
     def enqueue
-      Delayed::Job.enqueue( MessageDelivery.new( handler.value, handler.sym, handler.args, self.id) )
+      self.delayed_job = Delayed::Job.enqueue( MessageDelivery.new( handler.value, handler.sym, handler.args, self.id) )
+    end
+
+    def dequeue
+      delayed_job.destroy
     end
 
     alias_method :prerequisite_old_equals, :prerequisite=
