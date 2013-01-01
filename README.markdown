@@ -5,7 +5,7 @@ The delayed_job Ruby Gem provides a job queueing system for Ruby. It implements 
 
 By breaking up otherwise serial execution into multiple queued jobs, a program can be made more scalable. Processing of (distributed) queues has a long and successful history in data processing for this reason.
 
-Queuing well for simple tasks. By simple I mean, the task can be done all at once, in one piece. It has no dependencies on other tasks. This works well for performing a file upload task in the background (to avoid tying up a Ruby virtual machine process/thread). More complex (compound) multi-part tasks, however, do not fit this model. Examples of complex (compound) tasks include:
+Queuing works well for simple tasks. By simple I mean, the task can be done all at once, in one piece. It has no dependencies on other tasks. This works well for performing a file upload task in the background (to avoid tying up a Ruby virtual machine process/thread). More complex (compound) multi-part tasks, however, do not fit this model. Examples of complex (compound) tasks include:
 
 1. pipelined (multi-step) generation of complex PDF documents
 2. extract/transfer/load (ETL) jobs that may load thousands of database records
@@ -18,44 +18,48 @@ Installing The Toy Application
 ------------------------------
 
 1. clone the repository: in your local terminal type
-    git clone https://github.com/paydici/orchestrated_app.git
+    ```git clone https://github.com/paydici/orchestrated_app.git```
 2. set up the sqlite3 database:
-    rake db:migrate
+    ```rake db:migrate```
 3. run the specs (tests):
-    rake spec
+    ```rake spec```
 
 If you did that right, you should see a bunch of green dots!
 
 Playing With The Framework
 --------------------------
 
-If you run "rails s" and load the main page (/) you'll be creating a simple workflow. If you want to execute that thing you can either run "rake jobs:work" from the command line (to continually run steps) or go into "rails c" and run DJ.work(num=100) (to run a specified number of steps).
+If you run "rails s" and load the main page (/) you'll be creating a simple workflow. If you want to execute that thing you can either run ```rake jobs:work``` from the command line (to continually run steps) or go into ```rails c``` and run ```DJ.work(num=100)``` (to run a specified number of steps).
 
-A great way to learn about the framework is to have a look at the specs (in the /spec directory).
+A great way to learn about the framework is to have a look at the specs (in the ```/spec``` directory).
 
 The API
 -------
 
-To orchestrate (methods) on your own classes you simply call "acts_as_orchestrated" in the class definition like this:
+To orchestrate (methods) on your own classes you simply call ```acts_as_orchestrated``` in the class definition like this:
 
-    class StatementGenerator
+```ruby
+class StatementGenerator
 
-      acts_as_orchestrated
+  acts_as_orchestrated
 
-      def generate(statement_id)
-      ...
-      end
+  def generate(statement_id)
+  ...
+  end
 
-      def render(statement_id)
-      ...
-      end
+  def render(statement_id)
+  ...
+  end
 
-    end
+end
+```
 
 After that you can orchestrate any method on such a class e.g.
 
-    gen = StatementGenerator.new
-    gen.orchestrate( orchestrate.generate(stmt_id) ).render(stmt_id)
+```ruby
+gen = StatementGenerator.new
+gen.orchestrate( orchestrate.generate(stmt_id) ).render(stmt_id)
+```
 
 The next time you process a delayed job, the :generate message will be delivered. The time after that, the :render message will be delivered.
 
@@ -72,17 +76,17 @@ Not accidentally, this is similar to the way delayed_job's delay method works. U
 Key Concept: Prerequisites (Completion Expressions)
 ---------------------------------------------------
 
-Unlike delayed_job "delay", the orchestrated "orchestrated" method takes an optional parameter: the prerequisite. The prerequisite determines when your workflow step is ready to run.
+Unlike delayed_job ```delay```, the orchestrated ```orchestrated``` method takes an optional parameter: the prerequisite. The prerequisite determines when your workflow step is ready to run.
 
 The return value from "orchestrate" is itself a ready-to-use prerequisite. You saw this in the statement generation example above. The result of the first orchestrate call was sent as an argument to the second. In this way, the second workflow step was suspended until after the first one finished. You may have also noticed from that example that if you specify no prerequisite then the step will be ready to run immediately, as was the case for the "generate" call).
 
 There are five kinds of prerequisite in all. Some of them are used for combining others. The prerequisites types, also known as "completion expressions" are:
 
-1. OrchestrationCompletion—returned by "orchestrate", complete when its assocaited orchestration is complete
-2. Complete—always complete
-3. Incomplete—never complete
-4. FirstCompletion—aggregates other completions: complete after the first one completes
-5. LastCompletion—aggregates other completions: complete after all of them are complete
+1. ```OrchestrationCompletion```—returned by "orchestrate", complete when its assocaited orchestration is complete
+2. ```Complete```—always complete
+3. ```Incomplete```—never complete
+4. ```FirstCompletion```—aggregates other completions: complete after the first one completes
+5. ```LastCompletion```—aggregates other completions: complete after all of them are complete
 
 See the completion_spec for examples of how to combine these different prerequisite types into completion expressions.
 
