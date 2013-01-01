@@ -21,10 +21,12 @@ end
 
 gem 'jquery-rails'
 
+# Gems required by Orchestrated. These will eventually go in its Gem dependencies.
 gem 'delayed_job_active_record'
 gem 'state_machine'
 
 group :test, :spec, :development do
+  gem 'simplecov', :require => false
   gem 'rspec-rails'
   gem 'factory_girl'
   gem 'debugger' # this is what you say on ruby 1.9.3 (don't use ruby-debug)
