@@ -26,23 +26,17 @@ describe Orchestrated::CompletionExpression do
     end
   end
   context 'Incomplete' do
-    before(:each){First.new.orchestrated(Orchestrated::Incomplete.new).do_first_thing(12)}
-    it 'should not immediately enqueue the dependent orchestration' do
-      expect(DJ.job_count).to be(0)
-    end
-    it 'should never allow dependent orchestration to run' do
-      First.any_instance.should_not_receive(:do_first_thing)
-      DJ.work(1)
+    it 'should immediately raise an error' do
+      expect{First.new.orchestrated(Orchestrated::Incomplete.new).do_first_thing(12)}.to raise_error
     end
   end
   context 'OrchestrationCompletion' do
-    it 'should block second orchestration while first is incomplete' do
-      Second.new.orchestrated( First.new.orchestrated(Orchestrated::Incomplete.new).do_first_thing(3)).do_second_thing(4)
-      expect(DJ.job_count).to be(0)
+    before(:each){Second.new.orchestrated( First.new.orchestrated.do_first_thing(3)).do_second_thing(4)}
+    it 'should block second orchestration until after first runs' do
+      expect(DJ.job_count).to be(1)
     end
     it 'should run second orchestration after first is complete' do
       Second.any_instance.should_receive(:do_second_thing)
-      Second.new.orchestrated( First.new.orchestrated.do_first_thing(3)).do_second_thing(4)
       DJ.work(2)
     end
   end

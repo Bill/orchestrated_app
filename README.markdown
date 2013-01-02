@@ -89,9 +89,8 @@ There are five kinds of prerequisite in all. Some of them are used for combining
 
 1. ```OrchestrationCompletion```—returned by "orchestrate", complete when its assocaited orchestration is complete
 2. ```Complete```—always complete
-3. ```Incomplete```—never complete
-4. ```FirstCompletion```—aggregates other completions: complete after the first one completes
-5. ```LastCompletion```—aggregates other completions: complete after all of them are complete
+3. ```FirstCompletion```—aggregates other completions: complete after the first one completes
+4. ```LastCompletion```—aggregates other completions: complete after all of them are complete
 
 See the completion_spec for examples of how to combine these different prerequisite types into completion expressions.
 
@@ -110,26 +109,27 @@ A "ready" orchestration will use delayed_job to delivery its (delayed) message. 
 
 After your workflow step executes, the orchestration moves into either the "succeeded" or "failed" state.
 
-At any time, an orchestration may be cancelled. This moves it to the "cancelled" state and prevents delivery of the orchestrated message (in the future).
+When an orchestration is "ready" or "waiting" it may be cancelled by sending it the ```cancel!``` message. This moves it to the "cancelled" state and prevents delivery of the orchestrated message (in the future).
 
-It is important to understand that all three of the states: "succeeded", "failed", "cancelled" are part of a "super-state": "complete". When an orchestration is in any of those three states, it will return ```true``` in response to the ```complete?``` message. That also means that any other orchestration that is waiting, will be potentially be made "ready" to run.
+It is important to understand that both of the states: "succeeded" and "failed" are part of a "super-state": "complete". When an orchestration is in either of those two states, it will return ```true``` in response to the ```complete?``` message.
 
-As a result, it is not just successful completion of orchestrated methods that causes dependent ones to run—a "failed" orchestration is complete too! If you have an orchestration that actually requires successful completion of its prerequisite then it can inspect the prerequisite as needed. It's accessible through the ```orchestration`` accessor (on the orchestrated object).
+It is not just successful completion of orchestrated methods that causes dependent ones to run—a "failed" orchestration is complete too! If you have an orchestration that actually requires successful completion of its prerequisite then it can inspect the prerequisite as needed. It's accessible through the ```orchestration`` accessor (on the orchestrated object).
 
 Failure (An Option)
 -------------------
 
 Orchestration is built atop delayed_job and borrows delayed_job's failure semantics. Neither framework imposes any special constraints on the (delayed or orchestrated) methods. In particular, there are no special return values to signal "failure". Orchestration adopts delayed_job's semantics for failure detection: a method that raises an exception has failed. After a certain number of retries (configurable in delayed_job) the jobs is deemed permanently failed. When that happens, the corresponding orchestration is marked "failed".
 
+See the failure_spec if you'd like to understand more.
+
 Cancelling an Orchestration
 ---------------------------
 
-An orchestration can be cancelled by sending the (orchestration completion) the ```cancel``` message. This will prevent the orchestrated method from running (in the future). It will also mark the orchestration as "complete" which may cause dependent orchestrations to run.
+An orchestration can be cancelled by sending the (orchestration completion) the ```cancel!``` message. This will prevent the orchestrated method from running (in the future). It will also cancel dependent workflow steps.
 
+The cancellation_spec spells out more of the details.
 
 Project Next Steps
 ------------------
 
-1. decide whether cancellation should cancel downstream orchestrations
-2. think through how we want to handle (database) transactions vis-a-vis delayed_job and the other orchestration structures
-3. package this thing into a Ruby Gem
+1. package this thing into a Ruby Gem

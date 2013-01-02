@@ -10,7 +10,7 @@ module Orchestrated
 
     has_many :orchestration_completions
 
-    complete_states = [:succeeded, :failed, :cancelled]
+    complete_states = [:succeeded, :failed]
     state_machine :initial => :new do
       state :new
       state :waiting
@@ -33,6 +33,7 @@ module Orchestrated
 
       event :prerequisite_changed do
         transition [:new, :waiting] => :ready, :if => lambda {|orchestration| orchestration.prerequisite.complete?}
+        transition [:ready, :waiting] => :cancelled, :if => lambda {|orchestration| orchestration.prerequisite.cancelled?}
         transition :new => :waiting # otherwise
       end
 
@@ -45,23 +46,30 @@ module Orchestrated
       end
 
       event :cancel do
-        transition (any - :cancelled) => :cancelled
+        transition [:waiting, :ready] => :cancelled
       end
 
       after_transition any => :ready do |orchestration, transition|
         orchestration.enqueue
       end
 
-      after_transition any => complete_states do
+      after_transition :ready => :cancelled do |orchestration, transition|
+        orchestration.dequeue
+      end
+
+      after_transition any => complete_states do |orchestration, transition|
         # completion may make other orchestrations ready to run…
-        # this could be optimized a lot!
-        Orchestration.with_state('waiting').all.each do |other|
+        # TODO: this is a prime target for benchmarking
+        (Orchestration.with_state('waiting').all - [orchestration]).each do |other|
           other.prerequisite_changed
         end
       end
 
-      after_transition :ready => :cancelled do |orchestration, transition|
-        orchestration.dequeue
+      after_transition [:ready, :waiting] => :cancelled do |orchestration, transition|
+        # cancellation may cancel other orchestrations
+        (Orchestration.with_states(:ready, :waiting).all - [orchestration]).each do |other|
+          other.prerequisite_changed
+        end
       end
 
     end
@@ -71,6 +79,9 @@ module Orchestrated
       new.tap do |orchestration|
 
         orchestration.handler = Handler.new( value, sym, args)
+
+        # wee! static analysis FTW!
+        raise 'prerequisite can never be complete' if prerequisite.never_complete?
 
         # saves object as side effect of this assignment
         # also moves orchestration to :ready state
@@ -83,7 +94,7 @@ module Orchestrated
     end
 
     def dequeue
-      delayed_job.destroy
+      delayed_job.destroy# if DelayedJob.exists?(delayed_job_id)
     end
 
     alias_method :prerequisite_old_equals, :prerequisite=
