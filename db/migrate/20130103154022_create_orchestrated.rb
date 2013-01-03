@@ -1,5 +1,5 @@
-class CreateOrchestration < ActiveRecord::Migration
-  def up
+class CreateOrchestrated < ActiveRecord::Migration
+  def self.up
     create_table :orchestrations do |table|
       table.string     :state
       table.text       :handler
@@ -21,7 +21,7 @@ class CreateOrchestration < ActiveRecord::Migration
     end
   end
 
-  def down
+  def self.down
     drop_table :composited_completions
     drop_table :completion_expressions
     drop_table :orchestrations

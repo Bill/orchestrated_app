@@ -7,13 +7,13 @@ shared_examples_for 'cancellation:' do
   before(:each) do
     @prerequisite.cancel!
   end
-  it 'dependent should be in the "cancelled" state' do
-    expect(@dependent.reload.cancelled?).to be_true
+  it 'dependent should be in the "canceled" state' do
+    expect(@dependent.reload.canceled?).to be_true
   end
 end
 
 shared_examples_for 'cannot cancel:' do
-  it 'dependent should be in the "cancelled" state' do
+  it 'dependent should be in the "canceled" state' do
     expect{@prerequisite.cancel!}.to raise_error(StateMachine::InvalidTransition)
   end
 end
@@ -42,9 +42,9 @@ describe 'cancellation' do
       end
       it_should_behave_like 'cannot cancel:'
     end
-    context 'that is cancelled' do
+    context 'that is canceled' do
       before(:each) do
-        @prerequisite.orchestration.state = 'cancelled'
+        @prerequisite.orchestration.state = 'canceled'
       end
       it_should_behave_like 'cannot cancel:'
     end

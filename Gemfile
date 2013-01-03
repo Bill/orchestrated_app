@@ -21,9 +21,7 @@ end
 
 gem 'jquery-rails'
 
-# Gems required by Orchestrated. These will eventually go in its Gem dependencies.
-gem 'delayed_job_active_record'
-gem 'state_machine'
+gem 'orchestrated'
 
 group :test, :spec, :development do
   gem 'simplecov', :require => false
