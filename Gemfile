@@ -21,7 +21,7 @@ end
 
 gem 'jquery-rails'
 
-gem 'orchestrated'
+gem 'orchestrated', '0.0.6'
 
 group :test, :spec, :development do
   gem 'simplecov', :require => false

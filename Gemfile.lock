@@ -69,10 +69,10 @@ GEM
       treetop (~> 1.4.8)
     mime-types (1.19)
     multi_json (1.5.0)
-    orchestrated (0.0.1)
-      activerecord (>= 3)
-      delayed_job_active_record (~> 0.3)
-      state_machine (>= 1)
+    orchestrated (0.0.6)
+      activerecord (~> 3.2)
+      delayed_job_active_record (~> 0.3.3)
+      state_machine (~> 1.1.2)
     polyglot (0.3.3)
     rack (1.4.1)
     rack-cache (1.2)
@@ -145,7 +145,7 @@ DEPENDENCIES
   debugger
   factory_girl
   jquery-rails
-  orchestrated
+  orchestrated (= 0.0.6)
   rails (= 3.2.9)
   rspec-rails
   ruby-graphviz

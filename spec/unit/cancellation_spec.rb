@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 require 'orchestrated'
-require 'first'
 
 shared_examples_for 'cancellation:' do
   before(:each) do

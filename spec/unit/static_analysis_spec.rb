@@ -1,8 +1,6 @@
 require 'spec_helper'
 
 require 'orchestrated'
-require 'first'
-require 'second'
 
 describe 'performing static analysis' do
   context 'on a FirstCompletion' do

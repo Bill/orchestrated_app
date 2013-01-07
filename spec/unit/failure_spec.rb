@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 require 'orchestrated'
-require 'failer'
 
 describe 'failure' do
   context 'orchestrating a method that always fails' do
@@ -13,10 +12,10 @@ describe 'failure' do
         DJ.work(1)
       end
       it 'should leave the orchestration in the ready state' do
-        expect(Orchestrated::Orchestration.with_state('ready').count).to be(1)
+        expect(Orchestrated::Orchestration.with_state('ready').count).to eq(1)
       end
       it 'should leave the orchestration in the run queue' do
-        expect(DJ.job_count).to be(1)
+        expect(DJ.job_count).to eq(1)
       end
       context 'on first retry' do
         it 'should retry with same arguments' do
@@ -30,7 +29,7 @@ describe 'failure' do
         DJ.work_now(DJ.max_attempts)
       end
       it 'should leave the orchestration in the failed state' do
-        expect(Orchestrated::Orchestration.with_state('failed').count).to be(1)
+        expect(Orchestrated::Orchestration.with_state('failed').count).to eq(1)
       end
       context 'on first subsequent retry' do
         it 'should never deliver the orchestrated message again' do

@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 require 'orchestrated'
-require 'first'
 
 describe Orchestrated do
   context 'initializing' do

@@ -11,16 +11,11 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130103154022) do
+ActiveRecord::Schema.define(:version => 20130104072352) do
 
   create_table "completion_expressions", :force => true do |t|
     t.string  "type"
     t.integer "orchestration_id"
-  end
-
-  create_table "composited_completions", :force => true do |t|
-    t.integer "composite_completion_id"
-    t.integer "completion_expression_id"
   end
 
   create_table "delayed_jobs", :force => true do |t|
@@ -38,6 +33,12 @@ ActiveRecord::Schema.define(:version => 20130103154022) do
   end
 
   add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
+
+  create_table "orchestration_dependencies", :force => true do |t|
+    t.string  "state"
+    t.integer "dependent_id"
+    t.integer "prerequisite_id"
+  end
 
   create_table "orchestrations", :force => true do |t|
     t.string   "state"
