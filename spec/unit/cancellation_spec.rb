@@ -20,7 +20,7 @@ end
 describe 'cancellation' do
   context 'directly on an orchestration' do
     before(:each) do
-      @prerequisite = @dependent = First.new.orchestrated.do_first_thing(1)
+      @prerequisite = @dependent = First.new.orchestrate.do_first_thing(1)
     end
     context 'that is ready' do
       it_should_behave_like 'cancellation:'
@@ -50,15 +50,15 @@ describe 'cancellation' do
   end
   context 'of an orchestration that is depended on directly' do
     before(:each) do
-      @dependent = Second.new.orchestrated( @prerequisite = First.new.orchestrated.do_first_thing(1)).do_second_thing(2)
+      @dependent = Second.new.orchestrate( @prerequisite = First.new.orchestrate.do_first_thing(1)).do_second_thing(2)
     end
     it_should_behave_like 'cancellation:'
   end
   context 'of an orchestration that is depended on through a LastCompletion' do
     before(:each) do
-      @dependent = Second.new.orchestrated(
+      @dependent = Second.new.orchestrate(
         Orchestrated::LastCompletion.new <<
-          (@prerequisite = First.new.orchestrated.do_first_thing(1))
+          (@prerequisite = First.new.orchestrate.do_first_thing(1))
         ).do_second_thing(2)
     end
     it_should_behave_like 'cancellation:'

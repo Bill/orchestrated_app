@@ -5,13 +5,13 @@ require 'orchestrated'
 describe Orchestrated do
   context 'initializing' do
     it 'should not define orchestrated on Object' do
-      expect(Object.public_method_defined?(:orchestrated)).to be_false
+      expect(Object.public_method_defined?(:orchestrate)).to be_false
     end
     it 'should not define orchestrated on ActiveRecord::Base' do
-      expect(ActiveRecord::Base.public_method_defined?(:orchestrated)).to be_false
+      expect(ActiveRecord::Base.public_method_defined?(:orchestrate)).to be_false
     end
     it 'should define orchestrated on First' do
-      expect(First.public_method_defined?(:orchestrated)).to be_true
+      expect(First.public_method_defined?(:orchestrate)).to be_true
     end
   end
   context 'a new orchestrated object' do
@@ -23,7 +23,7 @@ describe Orchestrated do
       end
     end
     context 'orchestrating with no prerequisites' do
-      before(:each){@result = f.orchestrated.do_first_thing(2)}
+      before(:each){@result = f.orchestrate.do_first_thing(2)}
       after(:each){DJ.clear_all_jobs}
       it 'should not immediately invoke an orchestrated method' do
         First.any_instance.should_not_receive(:do_first_thing)
@@ -35,7 +35,7 @@ describe Orchestrated do
   end
   context 'invocation' do
     before(:each) do
-      First.new.orchestrated.do_first_thing(1)
+      First.new.orchestrate.do_first_thing(1)
     end
     it 'should have access to Orchestration' do
       First.any_instance.should_receive(:orchestration=).with(kind_of(Orchestrated::Orchestration))
